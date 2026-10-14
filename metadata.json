@@ -1,0 +1,6 @@
+{
+  "name": "TWC CareCRM - Healthcare PWA",
+  "description": "Hospital CRM Progressive Web App integrating Zoho CRM sales pipelines, Wati WhatsApp automation, WeChat Mini-App referrals, Google Suite (Sheets, Drive, Forms, Apps Script) sync, and Nigeria Data Protection Act (NDPA) compliance.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
