@@ -14,13 +14,18 @@ import {
   X,
   ChevronRight,
   Receipt,
-  Folder
+  Folder,
+  Download
 } from 'lucide-react';
 import { useCRM } from '../context/CRMContext';
+import { usePWAInstall } from '../hooks/usePWAInstall';
+import { PWAInstallModal } from './PWAInstallModal';
 
 export const IOSTabBar: React.FC = () => {
   const { activeTab, setActiveTab, tickets, filteredLeads, invoices, filteredFiles, setIsNDPAModalOpen } = useCRM();
+  const { isInstallable, isInstalled, install } = usePWAInstall();
   const [isMoreSheetOpen, setIsMoreSheetOpen] = useState(false);
+  const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
 
   const openTicketsCount = tickets.filter(t => t.status === 'open' || t.status === 'in_progress').length;
   const pendingInvoicesCount = invoices.filter(i => i.status !== 'paid').length;
@@ -178,11 +183,48 @@ export const IOSTabBar: React.FC = () => {
                   );
                 })}
               </div>
+
+              {/* Install PWA Action */}
+              {!isInstalled && (
+                <div className="pt-1">
+                  <button
+                    onClick={async () => {
+                      setIsMoreSheetOpen(false);
+                      if (isInstallable) {
+                        const ok = await install();
+                        if (!ok) setIsInstallModalOpen(true);
+                      } else {
+                        setIsInstallModalOpen(true);
+                      }
+                    }}
+                    className="w-full p-3.5 rounded-2xl bg-gradient-to-r from-[#045D6E] to-[#034a58] text-white flex items-center justify-between shadow-md active:scale-[0.99] transition-all cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center">
+                        <Download className="w-4 h-4 text-white" />
+                      </div>
+                      <div className="text-left">
+                        <div className="text-xs font-bold">Install TWC CareCRM Native App</div>
+                        <div className="text-[10px] text-teal-100">Add to home screen • Works offline</div>
+                      </div>
+                    </div>
+                    <span className="text-[11px] font-bold bg-white text-[#045D6E] px-2.5 py-1 rounded-full">
+                      Install
+                    </span>
+                  </button>
+                </div>
+              )}
             </div>
 
           </div>
         </div>
       )}
+
+      {/* PWA Install Modal */}
+      <PWAInstallModal
+        isOpen={isInstallModalOpen}
+        onClose={() => setIsInstallModalOpen(false)}
+      />
     </>
   );
 };

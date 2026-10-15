@@ -1,5 +1,5 @@
 {
-  "id": "./",
+  "id": "/",
   "name": "TWC CareCRM - Healthcare PWA",
   "short_name": "TWC CRM",
   "description": "Hospital CRM for Sales, Marketing & Care teams with WhatsApp automation, Google Suite sync, and NDPA compliance.",
@@ -24,7 +24,7 @@
       "purpose": "any"
     },
     {
-      "src": "./pwa-512x512.png",
+      "src": "./pwa-maskable-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

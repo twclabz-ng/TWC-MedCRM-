@@ -11,12 +11,17 @@ import {
   Sparkles, 
   Fingerprint, 
   Building2,
-  ArrowRight
+  ArrowRight,
+  Download,
+  Smartphone
 } from 'lucide-react';
 import { useCRM } from '../context/CRMContext';
+import { usePWAInstall } from '../hooks/usePWAInstall';
+import { PWAInstallModal } from './PWAInstallModal';
 
 export const LoginScreen: React.FC = () => {
   const { login } = useCRM();
+  const { isInstallable, isInstalled, isIOS, install } = usePWAInstall();
   
   const [email, setEmail] = useState('okiti@twchealth.ng');
   const [password, setPassword] = useState('TWC@Admin2025');
@@ -24,6 +29,7 @@ export const LoginScreen: React.FC = () => {
   const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,6 +57,17 @@ export const LoginScreen: React.FC = () => {
       login('okiti@twchealth.ng', 'TWC@Admin2025');
       setIsLoading(false);
     }, 400);
+  };
+
+  const handleInstallClick = async () => {
+    if (isInstallable) {
+      const success = await install();
+      if (!success) {
+        setIsInstallModalOpen(true);
+      }
+    } else {
+      setIsInstallModalOpen(true);
+    }
   };
 
   return (
@@ -83,6 +100,22 @@ export const LoginScreen: React.FC = () => {
             <p className="text-xs text-slate-500 mt-1">
               Hospital Clinical Sales, Retainers & Patient Care Management
             </p>
+
+            {/* Install PWA Prompt Header Banner */}
+            {!isInstalled && (
+              <button
+                type="button"
+                onClick={handleInstallClick}
+                className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 hover:bg-emerald-100 border border-emerald-300/80 text-emerald-800 text-xs font-bold transition-all shadow-xs cursor-pointer"
+                title="Install TWC CareCRM as a native app on this device"
+              >
+                <Download className="w-3.5 h-3.5 text-emerald-700 animate-pulse" />
+                <span>Install Native App</span>
+                <span className="text-[10px] bg-emerald-700 text-white px-1.5 py-0.2 rounded-full font-semibold">
+                  Offline Ready
+                </span>
+              </button>
+            )}
           </div>
 
           {/* Quick Demo Credentials Pill */}
@@ -164,7 +197,7 @@ export const LoginScreen: React.FC = () => {
               </div>
             </div>
 
-            {/* Options: Remember me & Forgot */}
+            {/* Remember Me */}
             <div className="flex items-center justify-between text-xs text-slate-600 pt-1">
               <label className="flex items-center gap-2 cursor-pointer select-none">
                 <input
@@ -210,7 +243,14 @@ export const LoginScreen: React.FC = () => {
               <ShieldCheck className="w-3.5 h-3.5" />
               NDPA 2023 Regulated
             </span>
-            <span>Version 3.2.0 • PWA</span>
+            <button
+              type="button"
+              onClick={() => setIsInstallModalOpen(true)}
+              className="text-[#045D6E] font-semibold hover:underline flex items-center gap-1 cursor-pointer"
+            >
+              <Smartphone className="w-3 h-3" />
+              <span>{isInstalled ? 'Installed PWA' : 'Install PWA'}</span>
+            </button>
           </div>
         </div>
 
@@ -219,6 +259,12 @@ export const LoginScreen: React.FC = () => {
           Need access assistance? Contact Hospital ICT Support at <span className="underline">support@twchealth.ng</span>
         </p>
       </div>
+
+      {/* PWA Install Guide Modal */}
+      <PWAInstallModal 
+        isOpen={isInstallModalOpen} 
+        onClose={() => setIsInstallModalOpen(false)} 
+      />
     </div>
   );
 };

@@ -1,7 +1,7 @@
-// TWC CareCRM Service Worker (Production PWA for GitHub Pages & Custom Domains)
-const CACHE_NAME = 'twc-carecrm-v3';
+// TWC CareCRM Service Worker (Production PWA for Google Cloud Run & GitHub Pages)
+const CACHE_NAME = 'twc-carecrm-v4';
 
-// Dynamically compute GitHub Pages subpath (e.g. /my-repo/ or /)
+// Dynamically compute subpath (e.g. /my-repo/ or /)
 const basePath = self.location.pathname.replace(/\/sw\.js$/, '') || '';
 
 const PRECACHE_ASSETS = [
@@ -11,6 +11,7 @@ const PRECACHE_ASSETS = [
   basePath + '/icon.svg',
   basePath + '/pwa-192x192.png',
   basePath + '/pwa-512x512.png',
+  basePath + '/pwa-maskable-512x512.png',
   basePath + '/apple-touch-icon.png'
 ];
 
@@ -46,7 +47,7 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch: Network-first for dynamic content with robust cache fallback for offline usage
+// Fetch: Network-first with robust cache fallback for offline usage
 self.addEventListener('fetch', (event) => {
   // Only handle GET requests
   if (event.request.method !== 'GET') return;
