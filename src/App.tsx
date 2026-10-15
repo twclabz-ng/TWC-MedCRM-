@@ -22,6 +22,7 @@ import { MyFilesView } from './components/MyFilesView';
 import { LeadDetailModal } from './components/LeadDetailModal';
 import { NewLeadModal } from './components/NewLeadModal';
 import { NDPAComplianceModal } from './components/NDPAComplianceModal';
+import { LoginScreen } from './components/LoginScreen';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
 import { WifiOff, ShieldCheck } from 'lucide-react';
 
@@ -38,7 +39,11 @@ const OfflineIndicator: React.FC = () => {
 };
 
 const CRMMainContent: React.FC = () => {
-  const { activeTab, setIsNDPAModalOpen } = useCRM();
+  const { activeTab, setIsNDPAModalOpen, isAuthenticated } = useCRM();
+
+  if (!isAuthenticated) {
+    return <LoginScreen />;
+  }
 
   return (
     <div className="min-h-screen bg-[#F2F2F7] flex flex-col font-sans text-slate-900 pb-[max(80px,env(safe-area-inset-bottom))] lg:pb-8 w-full overflow-x-hidden">

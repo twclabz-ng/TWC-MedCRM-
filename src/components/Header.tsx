@@ -14,7 +14,10 @@ import {
   RefreshCw,
   Landmark,
   Palette,
-  HardDrive
+  HardDrive,
+  LogOut,
+  Lock,
+  Shield
 } from 'lucide-react';
 import { useCRM } from '../context/CRMContext';
 import { usePWAInstall } from '../hooks/usePWAInstall';
@@ -36,7 +39,9 @@ export const Header: React.FC = () => {
     setIsPrivacyMasked, 
     setIsNewLeadModalOpen, 
     setIsNDPAModalOpen,
-    syncAllToGoogleSheets
+    syncAllToGoogleSheets,
+    currentUser,
+    logout
   } = useCRM();
 
   const { isInstallable, isInstalled, isIOS, install } = usePWAInstall();
@@ -45,6 +50,7 @@ export const Header: React.FC = () => {
   const [isTenantDropdownOpen, setIsTenantDropdownOpen] = useState(false);
   const [isAddTenantModalOpen, setIsAddTenantModalOpen] = useState(false);
   const [isPersonalizeModalOpen, setIsPersonalizeModalOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [syncFeedback, setSyncFeedback] = useState(false);
 
   // New Hospital Tenant Form State
@@ -353,6 +359,76 @@ export const Header: React.FC = () => {
               <Plus className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">+ Case</span>
             </button>
+
+            {/* Authenticated Admin Account (Dr. Okiti - okiti@twchealth.ng) */}
+            <div className="relative">
+              <button
+                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                className="flex items-center gap-1.5 p-1 sm:px-2 sm:py-1 rounded-full bg-slate-100 hover:bg-slate-200/80 border border-slate-200/90 transition-all ios-pressable group"
+                title="Account: Dr. Okiti (okiti@twchealth.ng)"
+              >
+                <img
+                  src={currentUser?.avatar || 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=150&auto=format&fit=crop&q=80'}
+                  alt={currentUser?.name || 'Dr. Okiti'}
+                  className="w-6 h-6 rounded-full object-cover border border-[#045D6E]/40 shrink-0"
+                />
+                <span className="hidden lg:inline text-xs font-bold text-slate-800 max-w-[90px] truncate">
+                  {currentUser?.name || 'Dr. Okiti'}
+                </span>
+                <ChevronDown className="w-3 h-3 text-slate-400 group-hover:text-slate-600 shrink-0" />
+              </button>
+
+              {/* Account Dropdown */}
+              {isUserMenuOpen && (
+                <div 
+                  className="absolute right-0 mt-2 w-72 sm:w-80 rounded-[22px] bg-white/95 ios-blur border border-slate-200/80 shadow-2xl p-3 z-50 animate-in fade-in zoom-in-95"
+                  onMouseLeave={() => setIsUserMenuOpen(false)}
+                >
+                  <div className="flex items-center gap-3 p-2 bg-slate-50/80 rounded-2xl border border-slate-100 mb-2">
+                    <img 
+                      src={currentUser?.avatar || 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=150&auto=format&fit=crop&q=80'}
+                      alt={currentUser?.name || 'Dr. Okiti'}
+                      className="w-10 h-10 rounded-full object-cover border-2 border-[#045D6E]"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="font-bold text-slate-900 text-xs truncate">{currentUser?.name || 'Dr. Okiti'}</div>
+                      <div className="font-mono text-[11px] text-[#045D6E] font-semibold truncate">{currentUser?.email || 'okiti@twchealth.ng'}</div>
+                      <div className="text-[10px] text-slate-500 truncate">{currentUser?.title || 'Medical Director & Chief Administrator'}</div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1 py-1 text-xs text-slate-600">
+                    <div className="px-3 py-1.5 flex items-center justify-between bg-slate-50 rounded-xl">
+                      <span className="text-[11px] text-slate-500">Hospital Role</span>
+                      <span className="font-bold text-slate-800 text-[11px]">Medical Director (Super Admin)</span>
+                    </div>
+                    <div className="px-3 py-1.5 flex items-center justify-between bg-slate-50 rounded-xl">
+                      <span className="text-[11px] text-slate-500">Security Clearance</span>
+                      <span className="font-bold text-emerald-700 text-[11px] flex items-center gap-1">
+                        <ShieldCheck className="w-3 h-3" /> NDPA Full Access
+                      </span>
+                    </div>
+                    <div className="px-3 py-1.5 flex items-center justify-between bg-slate-50 rounded-xl">
+                      <span className="text-[11px] text-slate-500">Current Hospital</span>
+                      <span className="font-semibold text-slate-800 text-[11px] truncate max-w-[130px]">{currentTenant.name}</span>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 mt-2 border-t border-slate-100">
+                    <button
+                      onClick={() => {
+                        setIsUserMenuOpen(false);
+                        logout();
+                      }}
+                      className="w-full py-2.5 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                    >
+                      <LogOut className="w-3.5 h-3.5" />
+                      <span>Lock Screen & Sign Out</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
 
           </div>
         </div>

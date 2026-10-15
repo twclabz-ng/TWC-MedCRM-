@@ -18,6 +18,21 @@ import {
 
 export const INITIAL_ASSOCIATES: Associate[] = [
   {
+    id: 'assoc_okiti',
+    tenantId: 'tenant_twc_vi',
+    name: 'Dr. Okiti',
+    role: 'clinical_lead',
+    title: 'Medical Director & Chief Hospital Administrator',
+    department: 'Hospital Executive & Clinical Governance',
+    avatar: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=150&auto=format&fit=crop&q=80',
+    phone: '+234 803 100 2025',
+    email: 'okiti@twchealth.ng',
+    activeLeadsCount: 28,
+    closedRevenueNGN: 68500000,
+    monthlyTargetNGN: 80000000,
+    satisfactionScore: 4.98,
+  },
+  {
     id: 'assoc_chioma',
     tenantId: 'tenant_twc_vi',
     name: 'Dr. Chioma Okonjo',

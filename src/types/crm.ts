@@ -380,3 +380,16 @@ export interface BulkSMSCampaign {
     status: 'delivered' | 'failed' | 'pending';
   }[];
 }
+
+export interface AuthUser {
+  email: string;
+  name: string;
+  role: string;
+  title: string;
+  department: string;
+  avatar: string;
+  tenantId: string;
+  associateId: string;
+  lastLogin: string;
+}
+

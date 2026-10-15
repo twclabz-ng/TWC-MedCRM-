@@ -17,11 +17,25 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="TWC CRM" />
 
-    <!-- WebSocket Error Guard for Preview Environments & Sandboxed iFrames -->
+    <!-- WebSocket Error Guard for Cloud Preview & Sandboxed iFrames -->
     <script>
       (function() {
         if (typeof window !== 'undefined') {
-          // Suppress harmless WebSocket connection error toasts/overlays when HMR is disabled in preview iframe
+          // Suppress noisy [vite] websocket error in cloud proxy / preview where HMR is disabled
+          var originalConsoleError = console.error;
+          console.error = function() {
+            var args = Array.prototype.slice.call(arguments);
+            var firstArg = args[0] ? String(args[0]) : '';
+            if (
+              firstArg.indexOf('[vite] failed to connect to websocket') !== -1 ||
+              firstArg.indexOf('WebSocket closed without opened') !== -1 ||
+              firstArg.indexOf('failed to connect to websocket') !== -1
+            ) {
+              return; // Silently swallow HMR websocket errors in preview
+            }
+            return originalConsoleError.apply(console, args);
+          };
+
           window.addEventListener('error', function(event) {
             if (event && event.message && (
               event.message.indexOf('WebSocket') !== -1 ||
@@ -33,24 +47,48 @@
             }
           }, true);
 
-          // Graceful fallback wrapper for WebSocket if dev server or proxy blocks socket upgrades
           try {
             var NativeWS = window.WebSocket;
             if (NativeWS) {
               window.WebSocket = function(url, protocols) {
+                // If Vite dev client requests HMR or ping in non-WS proxied environment
+                if (protocols === 'vite-hmr' || protocols === 'vite-ping' || (Array.isArray(protocols) && (protocols.indexOf('vite-hmr') !== -1 || protocols.indexOf('vite-ping') !== -1))) {
+                  var listeners = {};
+                  var mockSocket = {
+                    readyState: 1, // OPEN
+                    url: url,
+                    protocol: typeof protocols === 'string' ? protocols : 'vite-hmr',
+                    addEventListener: function(type, fn) {
+                      listeners[type] = listeners[type] || [];
+                      listeners[type].push(fn);
+                      if (type === 'open') {
+                        setTimeout(function() { fn({ type: 'open' }); }, 10);
+                      }
+                    },
+                    removeEventListener: function(type, fn) {
+                      if (!listeners[type]) return;
+                      listeners[type] = listeners[type].filter(function(cb) { return cb !== fn; });
+                    },
+                    send: function() {},
+                    close: function() {
+                      mockSocket.readyState = 3;
+                      if (listeners['close']) {
+                        listeners['close'].forEach(function(fn) { fn({ type: 'close', wasClean: true }); });
+                      }
+                    }
+                  };
+                  return mockSocket;
+                }
+
                 try {
-                  var instance = protocols ? new NativeWS(url, protocols) : new NativeWS(url);
-                  instance.addEventListener('error', function(err) {
-                    if (err && err.stopPropagation) err.stopPropagation();
-                  });
-                  return instance;
+                  return protocols ? new NativeWS(url, protocols) : new NativeWS(url);
                 } catch (e) {
                   return {
+                    readyState: 3,
                     addEventListener: function() {},
                     removeEventListener: function() {},
                     send: function() {},
-                    close: function() {},
-                    readyState: 3
+                    close: function() {}
                   };
                 }
               };

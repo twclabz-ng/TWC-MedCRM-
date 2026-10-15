@@ -18,7 +18,8 @@ import {
   CommunicationChannel,
   CommunicationDirection,
   ActivityOutcome,
-  TenantDocumentFile
+  TenantDocumentFile,
+  AuthUser
 } from '../types/crm';
 import { 
   INITIAL_ASSOCIATES, 
@@ -39,6 +40,12 @@ import {
 } from '../data/mockData';
 
 interface CRMContextType {
+  // Authentication & Security Session
+  currentUser: AuthUser | null;
+  isAuthenticated: boolean;
+  login: (email: string, password: string) => { success: boolean; message?: string };
+  logout: () => void;
+
   // Tenancy (Multi-Hospital SaaS)
   tenants: HospitalTenant[];
   currentTenantId: string;
@@ -140,6 +147,64 @@ interface CRMContextType {
 const CRMContext = createContext<CRMContextType | undefined>(undefined);
 
 export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Authentication & Security (Admin user: okiti@twchealth.ng / TWC@Admin2025)
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(() => {
+    const saved = localStorage.getItem('twc_crm_auth_user');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        return null;
+      }
+    }
+    // Default active authenticated session for Dr. Okiti
+    return {
+      email: 'okiti@twchealth.ng',
+      name: 'Dr. Okiti',
+      role: 'clinical_lead',
+      title: 'Medical Director & Chief Hospital Administrator',
+      department: 'Hospital Executive & Clinical Governance',
+      avatar: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=150&auto=format&fit=crop&q=80',
+      tenantId: 'tenant_twc_vi',
+      associateId: 'assoc_okiti',
+      lastLogin: new Date().toISOString(),
+    };
+  });
+
+  const isAuthenticated = !!currentUser;
+
+  const login = (email: string, password: string): { success: boolean; message?: string } => {
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPassword = password.trim();
+
+    if (cleanEmail === 'okiti@twchealth.ng' && cleanPassword === 'TWC@Admin2025') {
+      const user: AuthUser = {
+        email: 'okiti@twchealth.ng',
+        name: 'Dr. Okiti',
+        role: 'clinical_lead',
+        title: 'Medical Director & Chief Hospital Administrator',
+        department: 'Hospital Executive & Clinical Governance',
+        avatar: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=150&auto=format&fit=crop&q=80',
+        tenantId: 'tenant_twc_vi',
+        associateId: 'assoc_okiti',
+        lastLogin: new Date().toISOString(),
+      };
+      setCurrentUser(user);
+      localStorage.setItem('twc_crm_auth_user', JSON.stringify(user));
+      return { success: true };
+    }
+
+    return {
+      success: false,
+      message: 'Invalid login details. Please use okiti@twchealth.ng and TWC@Admin2025'
+    };
+  };
+
+  const logout = () => {
+    setCurrentUser(null);
+    localStorage.removeItem('twc_crm_auth_user');
+  };
+
   // Multi-hospital SaaS Tenancy
   const [tenants, setTenants] = useState<HospitalTenant[]>(() => {
     const saved = localStorage.getItem('twc_crm_tenants');
@@ -723,6 +788,10 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   return (
     <CRMContext.Provider value={{
+      currentUser,
+      isAuthenticated,
+      login,
+      logout,
       tenants,
       currentTenantId,
       setCurrentTenantId,
